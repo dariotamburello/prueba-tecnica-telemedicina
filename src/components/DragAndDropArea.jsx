@@ -30,11 +30,15 @@ export default function DragDropArea({ onFileUpload }) {
       onDragOver={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`border-2 border-dashed p-8 text-center mb-4 rounded-lg transition-colors ${
-        isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+      className={`border-2 border-dashed p-8 text-center mb-6 rounded-lg transition-colors duration-200 ease-in-out ${
+        isDragging
+          ? "border-blue-500 bg-blue-50 shadow-md"
+          : "border-gray-300 hover:border-gray-400"
       }`}
     >
-      <p>Arrastra un archivo aquí para cargar un nuevo paciente</p>
+      <p className="text-gray-600">
+        Arrastra un archivo aquí para cargar un nuevo paciente
+      </p>
     </div>
   );
 }

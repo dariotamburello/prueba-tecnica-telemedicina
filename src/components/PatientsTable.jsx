@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-table";
 import { useAuth } from "../hooks/useAuth";
 import { usePatientContext } from "../hooks/usePatientContext";
+import { PatientTableMobile } from "./PatientTableMobile";
 
 export default function PatientsTable({ data }) {
   const [showModal, setShowModal] = useState(false);
@@ -34,7 +35,8 @@ export default function PatientsTable({ data }) {
     const updatedPatient = {
       ...patient,
       assignedTo: user.email,
-      attendAt: new Date().toLocaleString(),
+      attendedAt: new Date().toLocaleString(),
+      status: "Asignado",
       room: firstAvailableRoom,
     };
     assignRoomToPatient(firstAvailableRoom);
@@ -111,7 +113,7 @@ export default function PatientsTable({ data }) {
               const patient = row.original;
               const isAssignedToMe = patient.assignedTo === user.email;
 
-              return isAssignedToMe && patient.status === "Activo" ? (
+              return isAssignedToMe && patient.status === "Asignado" ? (
                 <button
                   onClick={() => handleFinishConsultation(patient)}
                   className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
@@ -133,56 +135,96 @@ export default function PatientsTable({ data }) {
 
   return (
     <>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="block md:hidden space-y-4">
+        <PatientTableMobile table={table}></PatientTableMobile>
+      </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4">Confirmación</h3>
-            <p className="mb-4">
-              ¿Está seguro que desea enviar el link al paciente{" "}
-              <strong>{selectedPatient?.name}</strong> a su teléfono WhatsApp:{" "}
-              <strong>{selectedPatient?.whatsapp}</strong>?
-            </p>
-            <div className="flex justify-end space-x-2">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto transform transition-all duration-300 ease-in-out">
+            <div className="border-b border-gray-200 pb-3 pt-4 px-6 flex justify-between items-center">
+              <h3 className="text-xl font-extrabold text-gray-900">
+                Confirmación
+              </h3>
               <button
                 onClick={closeModal}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                aria-label="Cerrar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-6">
+              <p className="text-base text-gray-700 mb-4">
+                ¿Está seguro que desea enviar el link al paciente{" "}
+                <strong className="text-gray-900">
+                  {selectedPatient?.name}
+                </strong>{" "}
+                a su teléfono WhatsApp:{" "}
+                <strong className="text-green-600">
+                  {selectedPatient?.whatsapp}
+                </strong>
+                ?
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-3 px-6 pb-6">
+              <button
+                onClick={closeModal}
+                className="px-5 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={closeModal}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 Aceptar
               </button>
